@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión Académica</title>
+    <!-- CSS en línea para un único archivo, con un diseño moderno -->
+    <style>
+        :root {
+            --primary-color: #4f46e5; /* Indigo */
+            --secondary-color: #10b981; /* Green/Admin */
+            --docente-color: #3b82f6; /* Blue/Docente */
+            --estudiante-color: #f59e0b; /* Amber/Estudiante */
+            --danger-color: #ef4444; /* Red */
+            --bg-color: transparent; /* Se usa la imagen de fondo */
+            --card-bg: rgba(255, 255, 255, 0.95); /* Blanco con ligera transparencia */
+            --text-color: #1f2937;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: var(--text-color);
+            /* --- FONDO DE IMAGEN APLICADO A TODO EL CUERPO --- */
+            background-image: url('images.jfif'); /* Usamos la imagen subida */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed; /* La imagen no se mueve al hacer scroll */
+            background-color: #f3f4f6; /* Fondo de respaldo */
+        }
+
+        /* Aplicar una capa de opacidad global para que el contenido resalte */
+        main::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.5); /* Semi-transparente para mayor legibilidad */
+            z-index: -1;
+        }
+        
+        /* Nav Bar */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--card-bg); /* Fondo de la barra con transparencia */
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: relative; /* Asegura que la barra esté sobre el fondo */
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            gap: 1.5rem;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 500;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .nav-links a:hover {
+            background-color: var(--primary-color);
+            color: var(--card-bg);
+        }
+
+        /* Main Content */
+        main {
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: calc(100vh - 65px); /* Ajustar según altura de nav */
+            position: relative;
+        }
+
+        .content-card {
+            background-color: var(--card-bg); /* Fondo de la tarjeta con transparencia */
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        /* Dashboard Container for Student (Sidebar Layout) */
+        .dashboard-container {
+            display: flex;
+            width: 100%;
+            max-width: 1200px;
+            margin-top: 2rem;
+            /* Usamos la misma tarjeta de fondo, pero sin centrar el texto globalmente */
+            background-color: var(--card-bg); 
+            border-radius: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            min-height: 500px; /* Altura mínima para mostrar el sidebar */
+            text-align: left; /* Restablecer alineación del texto */
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: rgba(255, 255, 255, 0.8); /* Sidebar un poco más transparente */
+            border-right: 1px solid #e5e7eb;
+            padding: 1.5rem 0;
+            border-radius: 1rem 0 0 1rem;
+        }
+
+        .sidebar-header {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            padding: 0 1.5rem 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            margin-bottom: 1rem;
+        }
+
+        .sidebar-link {
+            display: block;
+            padding: 0.75rem 1.5rem;
+            text-decoration: none;
+            color: var(--text-color);
+            transition: background-color 0.2s, color 0.2s;
+            font-weight: 500;
+        }
+
+        .sidebar-link:hover, .sidebar-link.active {
+            background-color: var(--estudiante-color);
+            color: white;
+        }
+
+        .dashboard-main-content {
+            flex-grow: 1;
+            padding: 2rem;
+            text-align: center;
+        }
+        /* Fin de estilos del Dashboard Estudiantil */
+
+        /* Estilos para el contenido Centrado (Admin/Docente/Logout) */
+        .centered-content {
+            width: 100%;
+            max-width: 600px;
+            padding: 2rem;
+            text-align: center;
+        }
+
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .dashboard-buttons button {
+            color: white;
+            padding: 1rem 1.5rem;
+            border: none;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+            width: 100%;
+        }
+        /* Color específicos para los botones de dashboard */
+        .admin-btn { background-color: var(--secondary-color); }
+        .docente-btn { background-color: var(--docente-color); }
+
+        .dashboard-buttons button:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        .dashboard-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none; 
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.7); /* Modal más oscuro para enfocarse */
+            backdrop-filter: blur(4px);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg); /* Fondo de la tarjeta con transparencia */
+            padding: 2rem;
+            border-radius: 1rem;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: var(--danger-color);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* Form & Select Styles */
+        #login-form label,
+        #admin-config-modal label,
+        #docente-materia-modal label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            text-align: left;
+        }
+        #login-form input[type="text"], 
+        #login-form input[type="password"],
+        #admin-config-modal select,
+        #docente-materia-modal select {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        #login-form input:focus,
+        #admin-config-modal select:focus,
+        #docente-materia-modal select:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+        #login-form button,
+        #admin-config-modal button,
+        #docente-materia-modal button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.75rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s;
+            width: 100%;
+            margin-top: 1rem;
+        }
+        #login-form button:hover,
+        #admin-config-modal button:hover,
+        #docente-materia-modal button:hover {
+            background-color: #4338ca;
+        }
+        #login-message {
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        /* Media Queries for Responsiveness */
+        @media (max-width: 768px) {
+            nav {
+                padding: 1rem 1rem;
+            }
+            .nav-links {
+                gap: 1rem;
+            }
+            main {
+                padding: 1rem;
+            }
+            .content-card {
+                padding: 1.5rem;
+            }
+            .dashboard-container {
+                flex-direction: column;
+                min-height: auto;
+            }
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #e5e7eb;
+                border-radius: 1rem 1rem 0 0;
+            }
+            .sidebar-nav {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: space-around;
+            }
+            .sidebar-link {
+                padding: 0.5rem 1rem;
+                flex-grow: 1;
+                text-align: center;
+            }
+            .sidebar-header {
+                text-align: center;
+            }
+        }
+        
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">Sistema Académico</div>
+        <ul class="nav-links">
+            <li><a href="#" id="nav-bienvenida">Bienvenida</a></li>
+            <li><a href="#" id="nav-login">Inicio de Sesión</a></li>
+            <li id="nav-logout-item" style="display:none;"><a href="#" id="nav-logout">Salir</a></li>
+        </ul>
+    </nav>
+
+    <main id="contenido-principal">
+        <div class="content-card" id="main-content-area">
+            <!-- El contenido se inyecta aquí mediante JavaScript -->
+        </div>
+    </main>
+
+    <!-- Modal para el Formulario de Inicio de Sesión -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Iniciar Sesión</h2>
+            <form id="login-form">
+                <label for="username">Usuario:</label>
+                <input type="text" id="username" required><br>
+                <label for="password">Contraseña:</label>
+                <input type="password" id="password" required><br>
+                <button type="submit">Acceder</button>
+                <p id="login-message" style="color: var(--danger-color);"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para la Configuración de Administrador -->
+    <div id="admin-config-modal" class="modal">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 1.5rem;">Configuración de Administrador</h2>
+            <p>Selecciona el turno y la carrera para continuar:</p>
+            
+            <label for="turno-select">Turno:</label>
+            <select id="turno-select">
+                <option value="manana">Mañana</option>
+                <option value="tarde">Tarde</option>
+                <option value="noche">Noche</option>
+            </select>
+
+            <label for="carrera-select" style="margin-top: 1rem;">Carrera:</label>
+            <select id="carrera-select">
+                <option value="gastronomia">Gastronomía</option>
+                <option value="contabilidad">Contabilidad</option>
+                <option value="sistemas-informaticos">Sistemas Informáticos</option>
+            </select>
+            
+            <button id="confirm-admin-selection">Aceptar</button>
+        </div>
+    </div>
+    
+    <!-- Modal para la Selección de Materia de Docente -->
+    <div id="docente-materia-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="close-docente-materia-modal">&times;</span>
+            <h2 style="margin-bottom: 1.5rem;">Selección de Materia</h2>
+            <p>Selecciona la materia que deseas gestionar:</p>
+            
+            <label for="materia-select">Materia:</label>
+            <select id="materia-select">
+                <option value="DPW-302">DPW-302</option>
+                <option value="GMC-303">GMC-303</option>
+                <option value="BDD-308">BDD-308</option>
+                <option value="PDM-307">PDM-307</option>
+                <option value="ADS-306">ADS-306</option>
+                <option value="TMG-305">TMG-305</option>
+                <option value="RDC-304">RDC-304</option>
+            </select>
+            
+            <button id="confirm-docente-materia">Confirmar</button>
+        </div>
+    </div>
+
+    <script>
+        const navBienvenida = document.getElementById('nav-bienvenida');
+        const navLogin = document.getElementById('nav-login');
+        const navLogoutItem = document.getElementById('nav-logout-item');
+        const navLogout = document.getElementById('nav-logout');
+        
+        const mainContentArea = document.getElementById('main-content-area');
+        
+        // Modales de Login y Admin
+        const loginModal = document.getElementById('login-modal');
+        const loginForm = document.getElementById('login-form');
+        const loginMessage = document.getElementById('login-message');
+        const closeLoginModal = loginModal.querySelector('.close-button');
+        const adminConfigModal = document.getElementById('admin-config-modal');
+        const confirmAdminSelectionBtn = document.getElementById('confirm-admin-selection');
+        
+        // Nuevo Modal de Docente
+        const docenteMateriaModal = document.getElementById('docente-materia-modal');
+        const closeDocenteMateriaModal = document.getElementById('close-docente-materia-modal');
+        const confirmDocenteMateriaBtn = document.getElementById('confirm-docente-materia');
+
+        let loggedInUserRole = null;
+        let adminSettings = { turno: '', carrera: '' };
+        let docenteSettings = { materia: '' }; // Nuevo estado para Docente
+
+        // Definición de roles y credenciales
+        const USERS = {
+            'DIREC': { password: 'DIREC324', role: 'Administrador' },
+            'DOC': { password: 'DOC324', role: 'Docente' },
+            'JHON': { password: 'JHON324', role: 'Estudiante' }
+        };
+
+        // --- Funciones de Modales ---
+
+        function openModal(modal) {
+            modal.style.display = 'flex';
+        }
+
+        function closeModal(modal) {
+            modal.style.display = 'none';
+        }
+
+        closeLoginModal.onclick = () => closeModal(loginModal);
+        closeDocenteMateriaModal.onclick = () => closeModal(docenteMateriaModal); // Cerrar modal Docente
+
+        window.onclick = function(event) {
+            if (event.target == loginModal) {
+                closeModal(loginModal);
+            }
+            if (event.target == docenteMateriaModal) { // Cerrar modal Docente al hacer clic fuera
+                closeModal(docenteMateriaModal);
+            }
+        };
+
+        // --- Manejo del Contenido Principal y Dashboards ---
+
+        function renderBienvenidaContent() {
+            let htmlContent = ''; 
+            
+            if (!loggedInUserRole) {
+                // Contenido de Bienvenida sin autenticar (Diseño Centrado)
+                mainContentArea.className = 'content-card centered-content';
+                htmlContent += `<h1>INSTITUTO GARCON</h1>`;
+                htmlContent += `<p>Por favor, utiliza el menú **Inicio de Sesión** para acceder a tu cuenta.</p>`;
+                
+            } else {
+                
+                let dashboardHtml = `<h1>INSTITUTO GARCON</h1>`;
+                dashboardHtml += `<p>¡Hola, **${loggedInUserRole}**! Aquí tienes tus opciones:</p>`;
+                dashboardHtml += `<h2 style="font-size: 1.5rem; margin-top: 2rem; font-weight: 600;">Panel de ${loggedInUserRole}</h2>`;
+
+                if (loggedInUserRole === 'Estudiante') {
+                    // Diseño de Estudiante: Sidebar
+                    mainContentArea.className = ''; // Limpiar estilos para usar el diseño del dashboard-container
+                    
+                    htmlContent = `
+                        <div class="dashboard-container">
+                            <div class="sidebar">
+                                <div class="sidebar-header">Menú Estudiantil</div>
+                                <nav class="sidebar-nav">
+                                    <!-- Único enlace para Estudiantes: NOTAS POR MATERIA -->
+                                    <a href="#" class="sidebar-link active">NOTAS POR MATERIA</a> 
+                                </nav>
+                            </div>
+                            <div class="dashboard-main-content">
+                                ${dashboardHtml}
+                                <p style="margin-top: 1rem;">Usa el menú de la izquierda para navegar por tus opciones.</p>
+                            </div>
+                        </div>
+                    `;
+
+                } else {
+                    // Diseño de Administrador y Docente: Centrado con botones
+                    mainContentArea.className = 'content-card centered-content';
+                    htmlContent += dashboardHtml;
+
+                    if (loggedInUserRole === 'Administrador') {
+                        // Admin: MATERIAS (Cambiado de CARRERAS), DOCENTES
+                        htmlContent += `
+                            <div class="dashboard-buttons" style="max-width: 400px; margin: 1.5rem auto;">
+                                <button class="admin-btn">MATERIAS</button>
+                                <button class="admin-btn">DOCENTES</button>
+                            </div>
+                        `;
+                        if (adminSettings.carrera) {
+                            const turnoDisplay = adminSettings.turno.charAt(0).toUpperCase() + adminSettings.turno.slice(1);
+                            const carreraDisplay = adminSettings.carrera.charAt(0).toUpperCase() + adminSettings.carrera.slice(1);
+                            htmlContent += `<p style="margin-top: 1rem; font-weight: 500;">**Configuración Actual:** Turno: ${turnoDisplay}, Carrera: ${carreraDisplay}</p>`;
+                        }
+                    } else if (loggedInUserRole === 'Docente') {
+                        // Docente: Solo MATERIA
+                        htmlContent += `
+                            <div class="dashboard-buttons" style="max-width: 400px; margin: 1.5rem auto;">
+                                <button class="docente-btn" id="btn-seleccionar-materia">MATERIA</button>
+                            </div>
+                        `;
+                        if (docenteSettings.materia) {
+                            htmlContent += `<p style="margin-top: 1rem; font-weight: 500;">**Materia Seleccionada:** ${docenteSettings.materia}</p>`;
+                        }
+                    }
+                }
+            }
+            mainContentArea.innerHTML = htmlContent;
+
+            // --- Agregar Event Listeners DESPUÉS de renderizar el contenido ---
+            if (loggedInUserRole === 'Docente') {
+                const btnSeleccionarMateria = document.getElementById('btn-seleccionar-materia');
+                if (btnSeleccionarMateria) {
+                    btnSeleccionarMateria.addEventListener('click', () => {
+                        openModal(docenteMateriaModal);
+                    });
+                }
+            }
+        }
+
+        // --- Lógica de Autenticación ---
+
+        function handleLogin(role) {
+            loggedInUserRole = role;
+            loginMessage.textContent = '';
+            closeModal(loginModal);
+            
+            navLogin.parentElement.style.display = 'none';
+            navLogoutItem.style.display = 'list-item';
+            
+            if (role === 'Administrador') {
+                openModal(adminConfigModal);
+            }
+            
+            renderBienvenidaContent();
+        }
+
+        loginForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('username').value.trim().toUpperCase();
+            const password = document.getElementById('password').value;
+            
+            if (USERS[username] && USERS[username].password === password) {
+                handleLogin(USERS[username].role);
+            } else {
+                loginMessage.textContent = 'Credenciales incorrectas. Intenta de nuevo.';
+            }
+        });
+
+        navLogout.addEventListener('click', function(event) {
+            event.preventDefault();
+            loggedInUserRole = null;
+            adminSettings = { turno: '', carrera: '' }; 
+            docenteSettings = { materia: '' }; // Resetear estado de Docente
+            
+            navLogin.parentElement.style.display = 'list-item';
+            navLogoutItem.style.display = 'none';
+            
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+
+            renderBienvenidaContent();
+        });
+
+        // --- Lógica de Admin Modal ---
+
+        confirmAdminSelectionBtn.addEventListener('click', function() {
+            adminSettings.turno = document.getElementById('turno-select').value;
+            adminSettings.carrera = document.getElementById('carrera-select').value;
+            
+            closeModal(adminConfigModal);
+            
+            renderBienvenidaContent(); 
+        });
+        
+        // --- Lógica de Docente Modal ---
+
+        confirmDocenteMateriaBtn.addEventListener('click', function() {
+            docenteSettings.materia = document.getElementById('materia-select').value;
+            
+            closeModal(docenteMateriaModal);
+            
+            renderBienvenidaContent(); 
+        });
+
+
+        // --- Lógica de Navegación ---
+
+        navBienvenida.addEventListener('click', (e) => {
+            e.preventDefault();
+            renderBienvenidaContent();
+        });
+
+        navLogin.addEventListener('click', (e) => {
+            e.preventDefault();
+            loginMessage.textContent = '';
+            openModal(loginModal);
+        });
+
+        document.addEventListener('DOMContentLoaded', renderBienvenidaContent);
+
+    </script>
+</body>
+</html>
+
+       
+       
+     
